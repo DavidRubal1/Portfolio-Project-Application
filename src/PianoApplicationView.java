@@ -3,7 +3,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 
-import javax.swing.JButton;
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
@@ -38,35 +38,47 @@ public class PianoApplicationView extends JFrame {
 
         this.setJMenuBar(menu);
 
-        JPanel pianoPane = new JPanel(new GridLayout(1, 88, 0, 0));
-        pianoPane.setBackground(Color.GREEN);
-        pianoPane.setOpaque(true);
-        // pianoPane.setPreferredSize(new Dimension(300, 300));
+        int keyboardWidth = 2000;
+        int numWhiteKeys = 7, numBlackKeys = 5;
+
+        // keys are proportionally 2.2:6.5 and 1:4.5
+        int whiteKeyWidth = keyboardWidth / numWhiteKeys;
+        int whiteKeyHeight = (int) (whiteKeyWidth * 6.5 / 2.2);
+
+        int blackKeyWidth = (int) (whiteKeyWidth / 2.2);
+        int blackKeyHeight = (int) (whiteKeyHeight * 4.5 / 6.5);
+
+        int blackKeyGap = blackKeyWidth / 2;
 
         JLayeredPane keyLayers = new JLayeredPane();
-        keyLayers.setPreferredSize(new Dimension(1000, 100));
-        // keyLayers.setOpaque(true);
-        // keyLayers.setBackground(Color.blue);
-        JPanel whiteKeys = new JPanel(new GridLayout(1, 88, 0, 0));
-        JPanel blackKeys = new JPanel(new GridLayout(1, 88, 15, 0));
+        keyLayers.setPreferredSize(new Dimension(keyboardWidth, whiteKeyHeight));
+        // keyLayers.setLayout(new BorderLayout());
 
-        // JButton button = new JButton("Test");
-        for (int i = 0; i < 50; i++) {
-            JButton key = new JButton();
-            key.setPreferredSize(new Dimension(30, 100));
+        // TODO: Change this from GridLayout b/c it does not allow for manually sizing
+        // keys
+        JPanel whiteKeys = new JPanel(new GridLayout(1, numWhiteKeys, 0, 0));
+        JPanel blackKeys = new JPanel(new GridLayout(1, numWhiteKeys, blackKeyGap, 0));
+
+        for (int i = 0; i < numWhiteKeys; i++) {
+            JPanel key = new JPanel();
+            key.setSize(new Dimension(whiteKeyWidth, whiteKeyHeight));
             key.setBackground(Color.white);
             key.setFocusable(false);
+            key.setBorder(BorderFactory.createLineBorder(Color.black));
             whiteKeys.add(key);
         }
-        for (int i = 0; i < 50; i++) {
-            JButton key = new JButton();
-            key.setSize(new Dimension(15, 60));
+        for (int i = 0; i < numWhiteKeys; i++) {
+            JPanel key = new JPanel();
+            key.setSize(new Dimension(blackKeyWidth, blackKeyHeight));
             key.setBackground(Color.black);
             key.setFocusable(false);
+            key.setBorder(BorderFactory.createLineBorder(Color.gray));
             blackKeys.add(key);
         }
-        whiteKeys.setBounds(0, 0, 1000, 100);
-        blackKeys.setBounds(0, 0, 1000, 60);
+        whiteKeys.setBounds(0, 0, keyboardWidth, whiteKeyHeight);
+        blackKeys.setBounds(0, 0, keyboardWidth, blackKeyHeight);
+        blackKeys.setOpaque(false);
+
         keyLayers.add(blackKeys);
         keyLayers.add(whiteKeys);
 
