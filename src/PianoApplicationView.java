@@ -38,8 +38,8 @@ public class PianoApplicationView extends JFrame {
 
         this.setJMenuBar(menu);
 
-        int keyboardWidth = 2000;
-        int numWhiteKeys = 7, numBlackKeys = 5;
+        int keyboardWidth = 2002;
+        int numWhiteKeys = 7;
 
         // keys are proportionally 2.2:6.5 and 1:4.5
         int whiteKeyWidth = keyboardWidth / numWhiteKeys;
@@ -48,42 +48,41 @@ public class PianoApplicationView extends JFrame {
         int blackKeyWidth = (int) (whiteKeyWidth / 2.2);
         int blackKeyHeight = (int) (whiteKeyHeight * 4.5 / 6.5);
 
-        int blackKeyGap = blackKeyWidth / 2;
-
         JLayeredPane keyLayers = new JLayeredPane();
         keyLayers.setPreferredSize(new Dimension(keyboardWidth, whiteKeyHeight));
-        // keyLayers.setLayout(new BorderLayout());
 
-        // TODO: Change this from GridLayout b/c it does not allow for manually sizing
-        // keys
         JPanel whiteKeys = new JPanel(new GridLayout(1, numWhiteKeys, 0, 0));
-        JPanel blackKeys = new JPanel(new GridLayout(1, numWhiteKeys, blackKeyGap, 0));
+        JPanel blackKeys = new JPanel(new GridLayout(1, numWhiteKeys * 2, 0, 0));
 
         for (int i = 0; i < numWhiteKeys; i++) {
             JPanel key = new JPanel();
             key.setSize(new Dimension(whiteKeyWidth, whiteKeyHeight));
+            key.addMouseListener(this.controller);
             key.setBackground(Color.white);
             key.setFocusable(false);
             key.setBorder(BorderFactory.createLineBorder(Color.black));
             whiteKeys.add(key);
         }
-        for (int i = 0; i < numWhiteKeys; i++) {
+        for (int i = 0; i < numWhiteKeys * 2 - 2; i++) {
             JPanel key = new JPanel();
             key.setSize(new Dimension(blackKeyWidth, blackKeyHeight));
             key.setBackground(Color.black);
             key.setFocusable(false);
             key.setBorder(BorderFactory.createLineBorder(Color.gray));
+            if ((i % 2 == 1) || i == 4) {
+                key.setVisible(false);
+            }
             blackKeys.add(key);
         }
         whiteKeys.setBounds(0, 0, keyboardWidth, whiteKeyHeight);
-        blackKeys.setBounds(0, 0, keyboardWidth, blackKeyHeight);
+        blackKeys.setBounds((whiteKeyWidth * 3) / 4, 0, keyboardWidth - ((whiteKeyWidth * 3) / 4) - whiteKeyWidth / 4,
+                blackKeyHeight);
         blackKeys.setOpaque(false);
 
         keyLayers.add(blackKeys);
         keyLayers.add(whiteKeys);
 
         this.add(keyLayers);
-        // this.add(whiteKeys);
 
         this.setLayout(new FlowLayout());
         this.pack();
