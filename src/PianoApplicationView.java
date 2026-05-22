@@ -61,6 +61,7 @@ public class PianoApplicationView extends JFrame {
             key.setBackground(Color.white);
             key.setFocusable(false);
             key.setBorder(BorderFactory.createLineBorder(Color.black));
+
             whiteKeys.add(key);
         }
         for (int i = 0; i < numWhiteKeys * 2 - 2; i++) {
