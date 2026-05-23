@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Point;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -38,7 +39,18 @@ public class PianoApplicationView extends JFrame {
 
         this.setJMenuBar(menu);
 
-        int keyboardWidth = 2002;
+        JPanel testKey = new JPanel();
+        testKey.setEnabled(true);
+        testKey.setFocusable(false);
+        testKey.addMouseListener(this.controller);
+        testKey.putClientProperty("ID", -1);
+        testKey.setPreferredSize(new Dimension(100, 366));
+        testKey.setBackground(Color.green);
+        testKey.setBorder(BorderFactory.createLineBorder(Color.black));
+        testKey.addMouseListener(this.controller);
+        this.add(testKey);
+
+        int keyboardWidth = 1500;
         int numWhiteKeys = 7;
 
         // keys are proportionally 2.2:6.5 and 1:4.5
@@ -51,33 +63,39 @@ public class PianoApplicationView extends JFrame {
         JLayeredPane keyLayers = new JLayeredPane();
         keyLayers.setPreferredSize(new Dimension(keyboardWidth, whiteKeyHeight));
 
+        // white key layer has a grid layout to keep all keys in one row
         JPanel whiteKeys = new JPanel(new GridLayout(1, numWhiteKeys, 0, 0));
-        JPanel blackKeys = new JPanel(new GridLayout(1, numWhiteKeys * 2, 0, 0));
+        // black key layer has a null layout to allow spacing based on the position of
+        // the white keys
+        JPanel blackKeys = new JPanel(null);
 
-        for (int i = 0; i < numWhiteKeys; i++) {
+        // create all keys, add to respective key layer
+        Point nextWhiteKeyPos = new Point(0, 0);
+        for (int i = 0; i <= 11; i++) {
             JPanel key = new JPanel();
-            key.setSize(new Dimension(whiteKeyWidth, whiteKeyHeight));
+            key.setEnabled(true);
+            key.setFocusable(false);
             key.addMouseListener(this.controller);
-            key.setBackground(Color.white);
-            key.setFocusable(false);
-            key.setBorder(BorderFactory.createLineBorder(Color.black));
-
-            whiteKeys.add(key);
-        }
-        for (int i = 0; i < numWhiteKeys * 2 - 2; i++) {
-            JPanel key = new JPanel();
-            key.setSize(new Dimension(blackKeyWidth, blackKeyHeight));
-            key.setBackground(Color.black);
-            key.setFocusable(false);
-            key.setBorder(BorderFactory.createLineBorder(Color.gray));
-            if ((i % 2 == 1) || i == 4) {
-                key.setVisible(false);
+            key.putClientProperty("ID", i);
+            switch (i % 12) {
+                case 1, 3, 6, 8, 10:
+                    key.setBackground(Color.black);
+                    key.setBorder(BorderFactory.createLineBorder(Color.gray));
+                    key.setBounds(nextWhiteKeyPos.x - blackKeyWidth / 2, 0, blackKeyWidth, blackKeyHeight);
+                    blackKeys.add(key);
+                    break;
+                default:
+                    key.setSize(new Dimension(whiteKeyWidth, whiteKeyHeight));
+                    key.setBackground(Color.white);
+                    key.setBorder(BorderFactory.createLineBorder(Color.black));
+                    whiteKeys.add(key);
+                    nextWhiteKeyPos.setLocation(nextWhiteKeyPos.x + whiteKeyWidth, nextWhiteKeyPos.y);
+                    break;
             }
-            blackKeys.add(key);
         }
+
         whiteKeys.setBounds(0, 0, keyboardWidth, whiteKeyHeight);
-        blackKeys.setBounds((whiteKeyWidth * 3) / 4, 0, keyboardWidth - ((whiteKeyWidth * 3) / 4) - whiteKeyWidth / 4,
-                blackKeyHeight);
+        blackKeys.setBounds(0, 0, keyboardWidth, blackKeyHeight);
         blackKeys.setOpaque(false);
 
         keyLayers.add(blackKeys);
@@ -89,7 +107,6 @@ public class PianoApplicationView extends JFrame {
         this.pack();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
-        // add all of the page objects creted in private memebers section
     }
 
     public void registerController(PianoApplicationController controller) {

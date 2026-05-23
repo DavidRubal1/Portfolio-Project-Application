@@ -1,5 +1,8 @@
+import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+
+import javax.swing.JComponent;
 
 public class PianoApplicationController implements MouseListener {
     private PianoApplicationModel model;
@@ -8,40 +11,39 @@ public class PianoApplicationController implements MouseListener {
     public PianoApplicationController(PianoApplicationModel model, PianoApplicationView view) {
         this.model = model;
         this.view = view;
-        // Create a Piano with 13 keys starting at C4
 
     }
 
-    // TODO: find a way to differentiate the keys so that each press action is
-    // unique to each key.
     @Override
     public void mouseClicked(MouseEvent e) {
         System.out.println("Key Pressed");
-        throw new UnsupportedOperationException("Unimplemented method 'mouseClicked'");
+        JComponent key = (JComponent) (e.getSource());
+        key.setBackground(Color.red);
+        if (key.getClientProperty("ID").equals(-1)) {
+            key.setBackground(Color.red);
+        }
+
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'mousePressed'");
+        System.out.println("Key Pressed");
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
         System.out.println("Key Released");
-        throw new UnsupportedOperationException("Unimplemented method 'mouseReleased'");
+
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'mouseEntered'");
+        System.out.println("Key Pressed");
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'mouseExited'");
+        System.out.println("Key Pressed");
     }
 
     // @Override
