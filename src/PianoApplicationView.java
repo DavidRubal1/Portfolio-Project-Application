@@ -3,8 +3,11 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
@@ -12,9 +15,12 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
-public class PianoApplicationView extends JFrame {
+public class PianoApplicationView extends JFrame implements MouseListener {
 
     private PianoApplicationController controller;
+
+    JLayeredPane keyLayers;
+    JPanel blackKeys;
 
     PianoApplicationView() {
         super("PianoApp");
@@ -39,16 +45,10 @@ public class PianoApplicationView extends JFrame {
 
         this.setJMenuBar(menu);
 
-        JPanel testKey = new JPanel();
-        testKey.setEnabled(true);
-        testKey.setFocusable(false);
-        testKey.addMouseListener(this.controller);
-        testKey.putClientProperty("ID", -1);
-        testKey.setPreferredSize(new Dimension(100, 366));
-        testKey.setBackground(Color.green);
-        testKey.setBorder(BorderFactory.createLineBorder(Color.black));
-        testKey.addMouseListener(this.controller);
-        this.add(testKey);
+        // TODO: Streamline fix for black keys being re-layered everytime a white key
+        // updates
+
+        // TODO: Allow holding down the mouse to drag between notes
 
         int keyboardWidth = 1500;
         int numWhiteKeys = 7;
@@ -60,14 +60,14 @@ public class PianoApplicationView extends JFrame {
         int blackKeyWidth = (int) (whiteKeyWidth / 2.2);
         int blackKeyHeight = (int) (whiteKeyHeight * 4.5 / 6.5);
 
-        JLayeredPane keyLayers = new JLayeredPane();
-        keyLayers.setPreferredSize(new Dimension(keyboardWidth, whiteKeyHeight));
+        this.keyLayers = new JLayeredPane();
+        this.keyLayers.setPreferredSize(new Dimension(keyboardWidth, whiteKeyHeight));
 
         // white key layer has a grid layout to keep all keys in one row
         JPanel whiteKeys = new JPanel(new GridLayout(1, numWhiteKeys, 0, 0));
         // black key layer has a null layout to allow spacing based on the position of
         // the white keys
-        JPanel blackKeys = new JPanel(null);
+        this.blackKeys = new JPanel(null);
 
         // create all keys, add to respective key layer
         Point nextWhiteKeyPos = new Point(0, 0);
@@ -75,18 +75,22 @@ public class PianoApplicationView extends JFrame {
             JPanel key = new JPanel();
             key.setEnabled(true);
             key.setFocusable(false);
-            key.addMouseListener(this.controller);
+
+            key.addMouseListener(this);
+
             key.putClientProperty("ID", i);
             switch (i % 12) {
                 case 1, 3, 6, 8, 10:
                     key.setBackground(Color.black);
+                    key.putClientProperty("TYPE", "BLACK");
                     key.setBorder(BorderFactory.createLineBorder(Color.gray));
                     key.setBounds(nextWhiteKeyPos.x - blackKeyWidth / 2, 0, blackKeyWidth, blackKeyHeight);
-                    blackKeys.add(key);
+                    this.blackKeys.add(key);
                     break;
                 default:
                     key.setSize(new Dimension(whiteKeyWidth, whiteKeyHeight));
                     key.setBackground(Color.white);
+                    key.putClientProperty("TYPE", "WHITE");
                     key.setBorder(BorderFactory.createLineBorder(Color.black));
                     whiteKeys.add(key);
                     nextWhiteKeyPos.setLocation(nextWhiteKeyPos.x + whiteKeyWidth, nextWhiteKeyPos.y);
@@ -95,13 +99,13 @@ public class PianoApplicationView extends JFrame {
         }
 
         whiteKeys.setBounds(0, 0, keyboardWidth, whiteKeyHeight);
-        blackKeys.setBounds(0, 0, keyboardWidth, blackKeyHeight);
-        blackKeys.setOpaque(false);
+        this.blackKeys.setBounds(0, 0, keyboardWidth, blackKeyHeight);
+        this.blackKeys.setOpaque(false);
 
-        keyLayers.add(blackKeys);
-        keyLayers.add(whiteKeys);
+        this.keyLayers.add(this.blackKeys);
+        this.keyLayers.add(whiteKeys);
 
-        this.add(keyLayers);
+        this.add(this.keyLayers);
 
         this.setLayout(new FlowLayout());
         this.pack();
@@ -113,8 +117,60 @@ public class PianoApplicationView extends JFrame {
         this.controller = controller;
     }
 
-    // public void addPianoListener(ActionListener listenForKeyPress) {
-    // this.buttonA.addActionListener((ActionListener e) -> ));
-    // this.buttonB.addActionListener(listenForKeyPress);
-    // }
+    // mouseListener cannot be implemented in the controller because mouseListener
+    // for each component is set before the controller is constructed.
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        JComponent key = (JComponent) (e.getSource());
+        this.controller.processKeyPress((int) key.getClientProperty("ID"));
+
+        System.out.println("Key Pressed");
+        System.out.println("KEY ID: " + key.getClientProperty("ID"));
+
+        key.setBackground(Color.gray);
+
+        this.keyLayers.setLayer(this.blackKeys, JLayeredPane.DRAG_LAYER);
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        System.out.println("Key Released");
+
+        JComponent key = (JComponent) (e.getSource());
+
+        if (key.getClientProperty("TYPE").equals("BLACK")) {
+            key.setBackground(Color.black);
+        } else {
+            key.setBackground(Color.white);
+        }
+
+        this.keyLayers.setLayer(this.blackKeys, JLayeredPane.DRAG_LAYER);
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        // System.out.println("Key Pressed");
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        System.out.println("Key Exited");
+
+        JComponent key = (JComponent) (e.getSource());
+
+        if (key.getClientProperty("TYPE").equals("BLACK")) {
+            key.setBackground(Color.black);
+        } else {
+            key.setBackground(Color.white);
+        }
+
+        this.keyLayers.setLayer(this.blackKeys, JLayeredPane.DRAG_LAYER);
+    }
+
 }

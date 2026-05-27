@@ -1,10 +1,4 @@
-import java.awt.Color;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-
-import javax.swing.JComponent;
-
-public class PianoApplicationController implements MouseListener {
+public class PianoApplicationController {
     private PianoApplicationModel model;
     private PianoApplicationView view;
 
@@ -14,41 +8,14 @@ public class PianoApplicationController implements MouseListener {
 
     }
 
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        System.out.println("Key Pressed");
-        JComponent key = (JComponent) (e.getSource());
-        key.setBackground(Color.red);
-        if (key.getClientProperty("ID").equals(-1)) {
-            key.setBackground(Color.red);
-        }
-
+    public void updateViewToMatchModel() {
+        return;
     }
 
-    @Override
-    public void mousePressed(MouseEvent e) {
-        System.out.println("Key Pressed");
+    // Sends the keyID (int [0, 12] of the key's position) to the model to update
+    // the state of the keyboard accordingly
+    public void processKeyPress(int keyID) {
+        this.model.playKey(keyID);
     }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        System.out.println("Key Released");
-
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        System.out.println("Key Pressed");
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-        System.out.println("Key Pressed");
-    }
-
-    // @Override
-    // public void actionPerformed(ActionEvent e) {
-    // if(e.getSource() == )
-    // }
 
 }
