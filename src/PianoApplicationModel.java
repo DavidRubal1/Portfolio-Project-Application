@@ -1,6 +1,10 @@
 // all the calculations
 
+import java.io.File;
+import java.io.IOException;
+
 import javax.sound.midi.Instrument;
+import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiChannel;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
@@ -33,11 +37,20 @@ public class PianoApplicationModel {
             this.synth = MidiSystem.getSynthesizer();
             this.synth.open();
         } catch (MidiUnavailableException e) {
-            System.err.print("Error getting synthesizer");
+            System.err.print("Unable to get synthesizer");
             return;
         }
 
-        this.soundbank = this.synth.getDefaultSoundbank();
+        File soundbankFile = new File("lib\\GS_sound_set__16_bit_.sf2");
+        try {
+            this.soundbank = MidiSystem.getSoundbank(soundbankFile);
+        } catch (IOException e) {
+            System.err.println("Unable to read/open soundbank file");
+            return;
+        } catch (InvalidMidiDataException e) {
+            System.err.println("Soundbank file does not point to valid MIDI soundbank");
+        }
+
         this.instruments = this.soundbank.getInstruments();
 
         this.channel = this.synth.getChannels();
@@ -48,7 +61,7 @@ public class PianoApplicationModel {
         this.keyboard.play(this.STARTING_KEY + keyNum, 1.0);
 
         if (this.channel[0] != null) {
-            this.channel[0].noteOn(keyNum + 60, 90);
+            this.channel[0].noteOn(keyNum + 60, 40);
         }
 
     }
