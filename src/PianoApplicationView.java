@@ -27,6 +27,8 @@ import javax.swing.ScrollPaneConstants;
 public class PianoApplicationView extends JFrame implements MouseListener {
 
     private PianoApplicationController controller;
+    boolean leftClickDown = false;
+    JComponent activeKey = null;
 
     JLayeredPane keyLayers;
     JPanel blackKeys;
@@ -201,43 +203,59 @@ public class PianoApplicationView extends JFrame implements MouseListener {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        JComponent key = (JComponent) (e.getSource());
-        this.controller.processKeyPress((int) key.getClientProperty("ID"));
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            this.activeKey = (JComponent) (e.getSource());
+            this.controller.processKeyPress((int) this.activeKey.getClientProperty("ID"));
 
-        // System.out.println("Key Pressed");
-        // System.out.println("KEY ID: " + key.getClientProperty("ID"));
+            System.out.println("Pressed" + (int) this.activeKey.getClientProperty("ID"));
+            // System.out.println("KEY ID: " + key.getClientProperty("ID"));
 
-        key.setBackground(Color.gray);
+            this.activeKey.setBackground(Color.gray);
 
-        this.keyLayers.setLayer(this.blackKeys, JLayeredPane.DRAG_LAYER);
+            this.keyLayers.setLayer(this.blackKeys, JLayeredPane.DRAG_LAYER);
+            this.leftClickDown = true;
+
+        }
+
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        // System.out.println("Key Released");
+        System.out.println("Key Released");
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            // Add a check to see if the note is being sustained
+            this.controller.processKeyRelease((int) this.activeKey.getClientProperty("ID"));
+            System.out.println("Released" + (int) this.activeKey.getClientProperty("ID"));
 
-        JComponent key = (JComponent) (e.getSource());
-        // Add a check to see if the note is being sustained
-        this.controller.processKeyRelease((int) key.getClientProperty("ID"));
+            if (this.activeKey.getClientProperty("TYPE").equals("BLACK")) {
+                this.activeKey.setBackground(Color.black);
+            } else {
+                this.activeKey.setBackground(Color.white);
+            }
 
-        if (key.getClientProperty("TYPE").equals("BLACK")) {
-            key.setBackground(Color.black);
-        } else {
-            key.setBackground(Color.white);
+            this.keyLayers.setLayer(this.blackKeys, JLayeredPane.DRAG_LAYER);
+            this.leftClickDown = false;
+            this.activeKey = null;
         }
 
-        this.keyLayers.setLayer(this.blackKeys, JLayeredPane.DRAG_LAYER);
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
+        if (this.leftClickDown) {
+            this.activeKey = (JComponent) (e.getSource());
+            this.controller.processKeyPress((int) this.activeKey.getClientProperty("ID"));
+
+            this.activeKey.setBackground(Color.gray);
+            System.out.println("Entered" + (int) this.activeKey.getClientProperty("ID"));
+            this.keyLayers.setLayer(this.blackKeys, JLayeredPane.DRAG_LAYER);
+        }
         // System.out.println("Key Pressed");
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
         // System.out.println("Key Exited");
-
         JComponent key = (JComponent) (e.getSource());
         this.controller.processKeyRelease((int) key.getClientProperty("ID"));
 
