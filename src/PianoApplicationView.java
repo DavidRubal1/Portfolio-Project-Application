@@ -14,6 +14,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
@@ -23,6 +24,8 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class PianoApplicationView extends JFrame implements MouseListener {
 
@@ -49,6 +52,8 @@ public class PianoApplicationView extends JFrame implements MouseListener {
         this.menuFileLoad = new JMenuItem("Load");
         this.menuFileExit = new JMenuItem("Exit");
 
+        this.menuFileExit.addActionListener(e -> this.dispose());
+
         this.menuFile.add(this.menuFileSave);
         this.menuFile.add(this.menuFileLoad);
         this.menuFile.add(this.menuFileExit);
@@ -70,8 +75,6 @@ public class PianoApplicationView extends JFrame implements MouseListener {
 
         // TODO: Streamline fix for black keys being re-layered everytime a white key
         // updates
-
-        // TODO: Allow holding down the mouse to drag between notes
 
         int keyboardWidth = 1500;
         int numWhiteKeys = 7;
@@ -149,7 +152,6 @@ public class PianoApplicationView extends JFrame implements MouseListener {
         int currentInstr = this.controller.getCurrentInstrument();
         JPanel buttonPanel = new JPanel(new GridLayout(instrList.length, 1));
         for (int i = 0; i < instrList.length; i++) {
-            System.out.println(instrList[i].getName());
             JRadioButton instrument = new JRadioButton(instrList[i].getName());
             if (i == currentInstr) {
                 instrument.setSelected(true);
@@ -186,15 +188,17 @@ public class PianoApplicationView extends JFrame implements MouseListener {
     }
 
     public void changeSoundbankPage() {
-
+        final JFileChooser soundBankFileChooser = new JFileChooser();
+        FileFilter filter = new FileNameExtensionFilter(".sf2 or .dls Files", "sf2", "dls");
+        soundBankFileChooser.setFileFilter(filter);
+        soundBankFileChooser.setAcceptAllFileFilterUsed(false);
+        soundBankFileChooser.showOpenDialog(this);
+        this.controller.loadSoundbank(soundBankFileChooser.getSelectedFile());
     }
 
     public void registerController(PianoApplicationController controller) {
         this.controller = controller;
     }
-
-    // mouseListener cannot be implemented in the controller because mouseListener
-    // for each component is set before the controller is constructed.
 
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -207,9 +211,6 @@ public class PianoApplicationView extends JFrame implements MouseListener {
             this.activeKey = (JComponent) (e.getSource());
             this.controller.processKeyPress((int) this.activeKey.getClientProperty("ID"));
 
-            System.out.println("Pressed" + (int) this.activeKey.getClientProperty("ID"));
-            // System.out.println("KEY ID: " + key.getClientProperty("ID"));
-
             this.activeKey.setBackground(Color.gray);
 
             this.keyLayers.setLayer(this.blackKeys, JLayeredPane.DRAG_LAYER);
@@ -221,11 +222,9 @@ public class PianoApplicationView extends JFrame implements MouseListener {
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        System.out.println("Key Released");
         if (e.getButton() == MouseEvent.BUTTON1) {
             // Add a check to see if the note is being sustained
             this.controller.processKeyRelease((int) this.activeKey.getClientProperty("ID"));
-            System.out.println("Released" + (int) this.activeKey.getClientProperty("ID"));
 
             if (this.activeKey.getClientProperty("TYPE").equals("BLACK")) {
                 this.activeKey.setBackground(Color.black);
@@ -247,15 +246,12 @@ public class PianoApplicationView extends JFrame implements MouseListener {
             this.controller.processKeyPress((int) this.activeKey.getClientProperty("ID"));
 
             this.activeKey.setBackground(Color.gray);
-            System.out.println("Entered" + (int) this.activeKey.getClientProperty("ID"));
             this.keyLayers.setLayer(this.blackKeys, JLayeredPane.DRAG_LAYER);
         }
-        // System.out.println("Key Pressed");
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        // System.out.println("Key Exited");
         JComponent key = (JComponent) (e.getSource());
         this.controller.processKeyRelease((int) key.getClientProperty("ID"));
 

@@ -1,6 +1,10 @@
 import java.io.File;
+import java.io.IOException;
 
 import javax.sound.midi.Instrument;
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiChannel;
+import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Patch;
 
 public class PianoApplicationController {
@@ -19,9 +23,10 @@ public class PianoApplicationController {
         this.currentInstr = 0;
     }
 
-    // TODO: Have a method to turn a key off after a certain amount of time or when
-    // the key is let go of.
-    // ! This is important because some instruments do not decay over time
+    // TODO: Have a method to sustain a key while something is held (right click
+    // maybe, a keyboard button, etc.)
+
+    // TODO: Fix the high latency between key press and the sounds being generated
 
     public void changeInstrument(Instrument instr, int index) {
         Patch p = instr.getPatch();
@@ -39,13 +44,22 @@ public class PianoApplicationController {
     }
 
     // TODO finish this
-    public void loadNewSoundbank(File soundbankFile) {
+    public void loadSoundbank(File soundbankFile) {
         // this.model.getSynth().getChannels()[this.MIDI_CHANNEL].allNotesOff();
         // this.model.getSynth().getChannels()[this.MIDI_CHANNEL].
         // Synthesizer synth = this.model.getSynth();
         // synth.unloadAllInstruments(this.model.getSoundbank());
 
-        // Soundbank s = this.model.getSoundbank();
+        try {
+            this.model.setSoundbank(MidiSystem.getSoundbank(soundbankFile));
+        } catch (IOException e) {
+            System.err.println("Unable to read/open soundbank file");
+            return;
+        } catch (InvalidMidiDataException e) {
+            System.err.println("Soundbank file does not point to valid MIDI soundbank");
+            return;
+        }
+        this.currentInstr = 0;
 
     }
 
@@ -57,9 +71,11 @@ public class PianoApplicationController {
     // the state of the keyboard accordingly
     public void processKeyPress(int keyID) {
         this.model.getKeyboard().play(this.model.STARTING_KEY + keyID, 1.0);
+        MidiChannel activeChannel = this.model.getSynth().getChannels()[this.MIDI_CHANNEL];
 
-        if (this.model.getSynth().getChannels()[this.MIDI_CHANNEL] != null) {
-            this.model.getSynth().getChannels()[this.MIDI_CHANNEL].noteOn(keyID + this.MIDI_OFFSET_FROM_0,
+        if (activeChannel != null) {
+
+            activeChannel.noteOn(keyID + this.MIDI_OFFSET_FROM_0,
                     this.VELOCITY);
         }
     }

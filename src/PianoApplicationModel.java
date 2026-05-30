@@ -77,12 +77,7 @@ public class PianoApplicationModel {
         return this.soundbank;
     }
 
-    // public MidiChannel[] getChannels() {
-    // return this.synth.getChannels();
-    // }
-
-    // public Instrument[] getInstruments() {
-    // return this.soundbank.getInstruments();
-    // }
-
+    public void setSoundbank(Soundbank soundbank) {
+        this.soundbank = soundbank;
+    }
 }
