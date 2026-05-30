@@ -18,21 +18,24 @@ public class PianoApplicationModel {
     // TODO: Remake the Piano Component without using the OSU component interface so
     // the components jar file does not need to be included
 
-    // TODO: Figure out MIDI Synthesizers
-    // - How to assign an instrument
-    // - How to play sound
+    // TODO: Allow importing soundbanks & the ability to switch between instruments
+    // through the menu
 
     private Piano keyboard;
-    private final int STARTING_KEY = 40;
-    private final int KEYBOARD_LENGTH = 13;
+    // Keyboard properties, subject to change and usage will vary
+    public final int STARTING_KEY = 40;
+    public final int KEYBOARD_LENGTH = 13;
 
     private Synthesizer synth;
     private Soundbank soundbank;
-    private Instrument[] instruments;
     private MidiChannel[] channel;
+    private Instrument[] instruments;
 
     public PianoApplicationModel() {
+        // Initialize Piano Object
         this.keyboard = new Piano1(this.KEYBOARD_LENGTH, this.STARTING_KEY);
+
+        // Initialize Midi Synthesizer
         try {
             this.synth = MidiSystem.getSynthesizer();
             this.synth.open();
@@ -41,36 +44,45 @@ public class PianoApplicationModel {
             return;
         }
 
-        File soundbankFile = new File("lib\\GS_sound_set__16_bit_.sf2");
-        try {
-            this.soundbank = MidiSystem.getSoundbank(soundbankFile);
-        } catch (IOException e) {
-            System.err.println("Unable to read/open soundbank file");
-            return;
-        } catch (InvalidMidiDataException e) {
-            System.err.println("Soundbank file does not point to valid MIDI soundbank");
-        }
-
-        this.instruments = this.soundbank.getInstruments();
-
-        this.channel = this.synth.getChannels();
-
-    }
-
-    public void playKey(int keyNum) {
-        this.keyboard.play(this.STARTING_KEY + keyNum, 1.0);
-
-        if (this.channel[0] != null) {
-            this.channel[0].noteOn(keyNum + 60, 40);
+        // Initialize Soundbank
+        // Use the default soundbank first. If it is null, then use
+        // the included soundbank instead.
+        if (this.synth.getDefaultSoundbank() == null) {
+            // Call loadsoundbank with the one provided in lib.
+            File soundbankFile = new File("lib\\GS_sound_set__16_bit_.sf2");
+            try {
+                this.soundbank = MidiSystem.getSoundbank(soundbankFile);
+            } catch (IOException e) {
+                System.err.println("Unable to read/open soundbank file");
+                return;
+            } catch (InvalidMidiDataException e) {
+                System.err.println("Soundbank file does not point to valid MIDI soundbank");
+                return;
+            }
+        } else {
+            this.soundbank = this.synth.getDefaultSoundbank();
         }
 
     }
 
-    public void test() {
-
-        for (Instrument i : this.instruments) {
-            System.out.println(i.getName());
-        }
+    public Piano getKeyboard() {
+        return this.keyboard;
     }
+
+    public Synthesizer getSynth() {
+        return this.synth;
+    }
+
+    public Soundbank getSoundbank() {
+        return this.soundbank;
+    }
+
+    // public MidiChannel[] getChannels() {
+    // return this.synth.getChannels();
+    // }
+
+    // public Instrument[] getInstruments() {
+    // return this.soundbank.getInstruments();
+    // }
 
 }

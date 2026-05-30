@@ -1,49 +1,70 @@
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.sound.midi.Instrument;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
-public class PianoApplicationView extends JFrame implements MouseListener {
+public class PianoApplicationView extends JFrame implements MouseListener, ActionListener {
 
     private PianoApplicationController controller;
 
     JLayeredPane keyLayers;
     JPanel blackKeys;
+    JMenuBar menu;
+    JMenu menuFile, menuInstrument, menuHelp;
+    JMenuItem menuFileSave, menuFileLoad, menuFileExit, menuChangeInstr, menuChangeSoundbank;
 
     PianoApplicationView() {
         super("PianoApp");
 
-        JMenuBar menu = new JMenuBar();
+        this.menu = new JMenuBar();
 
-        JMenu menuFile = new JMenu("File");
-        JMenu menuEdit = new JMenu("Edit");
-        JMenu menuHelp = new JMenu("Help");
+        this.menuFile = new JMenu("File");
+        this.menuInstrument = new JMenu("Instrument");
+        this.menuHelp = new JMenu("Help");
 
-        JMenuItem menuFileSave = new JMenuItem("Save");
-        JMenuItem menuFileLoad = new JMenuItem("Load");
-        JMenuItem menuFileExit = new JMenuItem("Exit");
+        this.menuFileSave = new JMenuItem("Save");
+        this.menuFileLoad = new JMenuItem("Load");
+        this.menuFileExit = new JMenuItem("Exit");
 
-        menuFile.add(menuFileSave);
-        menuFile.add(menuFileLoad);
-        menuFile.add(menuFileExit);
+        this.menuFile.add(this.menuFileSave);
+        this.menuFile.add(this.menuFileLoad);
+        this.menuFile.add(this.menuFileExit);
 
-        menu.add(menuFile);
-        menu.add(menuEdit);
-        menu.add(menuHelp);
+        this.menuChangeInstr = new JMenuItem("Change Instrument");
+        this.menuChangeSoundbank = new JMenuItem("Select New Soundbank");
 
-        this.setJMenuBar(menu);
+        this.menuChangeInstr.addActionListener(e -> this.changeInstrumentPage());
+        this.menuChangeSoundbank.addActionListener(e -> this.changeSoundbankPage());
+
+        this.menuInstrument.add(this.menuChangeInstr);
+        this.menuInstrument.add(this.menuChangeSoundbank);
+
+        this.menu.add(this.menuFile);
+        this.menu.add(this.menuInstrument);
+        this.menu.add(this.menuHelp);
+
+        this.setJMenuBar(this.menu);
 
         // TODO: Streamline fix for black keys being re-layered everytime a white key
         // updates
@@ -113,6 +134,45 @@ public class PianoApplicationView extends JFrame implements MouseListener {
         this.setVisible(true);
     }
 
+    public void changeInstrumentPage() {
+        JDialog instrumentDialog = new JDialog(this, "Instrument Selection", Dialog.ModalityType.APPLICATION_MODAL);
+
+        instrumentDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        instrumentDialog.setSize(500, 500);
+        instrumentDialog.setLocationRelativeTo(this);
+
+        ButtonGroup radioGroup = new ButtonGroup();
+
+        Instrument[] instrList = this.controller.getInstrumentList();
+        int currentInstr = this.controller.getCurrentInstrument();
+        JPanel buttonPanel = new JPanel(new GridLayout(instrList.length, 1));
+        for (int i = 0; i < instrList.length; i++) {
+            System.out.println(instrList[i].getName());
+            JRadioButton instrument = new JRadioButton(instrList[i].getName());
+            if (i == currentInstr) {
+                instrument.setSelected(true);
+            }
+            instrument.putClientProperty("ID", i);
+            instrument
+                    .addActionListener(
+                            e -> this.controller.changeInstrument(instrList[(int) instrument.getClientProperty("ID")]));
+
+            radioGroup.add(instrument);
+            buttonPanel.add(instrument);
+        }
+        JScrollPane buttonScrollPane = new JScrollPane(buttonPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        instrumentDialog.add(buttonScrollPane);
+
+        // I need a list of the available instruments from the model
+
+        instrumentDialog.setVisible(true);
+    }
+
+    public void changeSoundbankPage() {
+
+    }
+
     public void registerController(PianoApplicationController controller) {
         this.controller = controller;
     }
@@ -171,6 +231,13 @@ public class PianoApplicationView extends JFrame implements MouseListener {
         }
 
         this.keyLayers.setLayer(this.blackKeys, JLayeredPane.DRAG_LAYER);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == this)
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
     }
 
 }
