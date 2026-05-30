@@ -1,17 +1,17 @@
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.sound.midi.Instrument;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -24,7 +24,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
-public class PianoApplicationView extends JFrame implements MouseListener, ActionListener {
+public class PianoApplicationView extends JFrame implements MouseListener {
 
     private PianoApplicationController controller;
 
@@ -136,7 +136,7 @@ public class PianoApplicationView extends JFrame implements MouseListener, Actio
 
     public void changeInstrumentPage() {
         JDialog instrumentDialog = new JDialog(this, "Instrument Selection", Dialog.ModalityType.APPLICATION_MODAL);
-
+        instrumentDialog.setLayout(new BorderLayout());
         instrumentDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         instrumentDialog.setSize(500, 500);
         instrumentDialog.setLocationRelativeTo(this);
@@ -152,19 +152,33 @@ public class PianoApplicationView extends JFrame implements MouseListener, Actio
             if (i == currentInstr) {
                 instrument.setSelected(true);
             }
-            instrument.putClientProperty("ID", i);
-            instrument
-                    .addActionListener(
-                            e -> this.controller.changeInstrument(instrList[(int) instrument.getClientProperty("ID")]));
+
+            // Save the current index to the object to be passed around when used
+            instrument.setActionCommand(Integer.toString(i));
 
             radioGroup.add(instrument);
             buttonPanel.add(instrument);
         }
+
         JScrollPane buttonScrollPane = new JScrollPane(buttonPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        instrumentDialog.add(buttonScrollPane);
+        buttonScrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
-        // I need a list of the available instruments from the model
+        JPanel lowerButtonPanel = new JPanel(new FlowLayout());
+        JButton selectBtn = new JButton("Select");
+        JButton cancelBtn = new JButton("Cancel");
+        selectBtn.addActionListener(e -> {
+            this.controller.changeInstrument(instrList[Integer.parseInt(
+                    radioGroup.getSelection().getActionCommand())], Integer.parseInt(
+                            radioGroup.getSelection().getActionCommand()));
+            instrumentDialog.dispose();
+        });
+        cancelBtn.addActionListener(e -> instrumentDialog.dispose());
+        lowerButtonPanel.add(selectBtn);
+        lowerButtonPanel.add(cancelBtn);
+
+        instrumentDialog.add(buttonScrollPane, BorderLayout.CENTER);
+        instrumentDialog.add(lowerButtonPanel, BorderLayout.SOUTH);
 
         instrumentDialog.setVisible(true);
     }
@@ -190,8 +204,8 @@ public class PianoApplicationView extends JFrame implements MouseListener, Actio
         JComponent key = (JComponent) (e.getSource());
         this.controller.processKeyPress((int) key.getClientProperty("ID"));
 
-        System.out.println("Key Pressed");
-        System.out.println("KEY ID: " + key.getClientProperty("ID"));
+        // System.out.println("Key Pressed");
+        // System.out.println("KEY ID: " + key.getClientProperty("ID"));
 
         key.setBackground(Color.gray);
 
@@ -200,9 +214,11 @@ public class PianoApplicationView extends JFrame implements MouseListener, Actio
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        System.out.println("Key Released");
+        // System.out.println("Key Released");
 
         JComponent key = (JComponent) (e.getSource());
+        // Add a check to see if the note is being sustained
+        this.controller.processKeyRelease((int) key.getClientProperty("ID"));
 
         if (key.getClientProperty("TYPE").equals("BLACK")) {
             key.setBackground(Color.black);
@@ -220,9 +236,10 @@ public class PianoApplicationView extends JFrame implements MouseListener, Actio
 
     @Override
     public void mouseExited(MouseEvent e) {
-        System.out.println("Key Exited");
+        // System.out.println("Key Exited");
 
         JComponent key = (JComponent) (e.getSource());
+        this.controller.processKeyRelease((int) key.getClientProperty("ID"));
 
         if (key.getClientProperty("TYPE").equals("BLACK")) {
             key.setBackground(Color.black);
@@ -231,13 +248,6 @@ public class PianoApplicationView extends JFrame implements MouseListener, Actio
         }
 
         this.keyLayers.setLayer(this.blackKeys, JLayeredPane.DRAG_LAYER);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == this)
-            // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
     }
 
 }

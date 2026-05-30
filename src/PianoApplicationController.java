@@ -23,13 +23,11 @@ public class PianoApplicationController {
     // the key is let go of.
     // ! This is important because some instruments do not decay over time
 
-    // Program and bank must be valid
-    // Figure out what program and bank mean
-    // and how to implement this
-    public void changeInstrument(Instrument instr) {
+    public void changeInstrument(Instrument instr, int index) {
         Patch p = instr.getPatch();
-
+        // System.out.println(p.getBank() + " ," + p.getProgram());
         this.model.getSynth().getChannels()[this.MIDI_CHANNEL].programChange(p.getBank(), p.getProgram());
+        this.currentInstr = index;
     }
 
     public Instrument[] getInstrumentList() {
@@ -63,6 +61,14 @@ public class PianoApplicationController {
         if (this.model.getSynth().getChannels()[this.MIDI_CHANNEL] != null) {
             this.model.getSynth().getChannels()[this.MIDI_CHANNEL].noteOn(keyID + this.MIDI_OFFSET_FROM_0,
                     this.VELOCITY);
+        }
+    }
+
+    public void processKeyRelease(int keyID) {
+        this.model.getKeyboard().play(this.model.STARTING_KEY + keyID, 0.0);
+
+        if (this.model.getSynth().getChannels()[this.MIDI_CHANNEL] != null) {
+            this.model.getSynth().getChannels()[this.MIDI_CHANNEL].noteOff(keyID + this.MIDI_OFFSET_FROM_0);
         }
     }
 
