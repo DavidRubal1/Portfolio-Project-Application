@@ -48,24 +48,25 @@ public class PianoApplicationView extends JFrame implements MouseListener {
         this.menuInstrument = new JMenu("Instrument");
         this.menuHelp = new JMenu("Help");
 
-        this.menuFileSave = new JMenuItem("Save");
-        this.menuFileLoad = new JMenuItem("Load");
+        // this.menuFileSave = new JMenuItem("Save");
+        this.menuFileLoad = new JMenuItem("Load Soundbank");
         this.menuFileExit = new JMenuItem("Exit");
 
+        this.menuFileLoad.addActionListener(e -> this.changeSoundbankPage());
         this.menuFileExit.addActionListener(e -> this.dispose());
 
-        this.menuFile.add(this.menuFileSave);
+        // this.menuFile.add(this.menuFileSave);
         this.menuFile.add(this.menuFileLoad);
         this.menuFile.add(this.menuFileExit);
 
         this.menuChangeInstr = new JMenuItem("Change Instrument");
-        this.menuChangeSoundbank = new JMenuItem("Select New Soundbank");
+        // this.menuChangeSoundbank = new JMenuItem("Select New Soundbank");
 
         this.menuChangeInstr.addActionListener(e -> this.changeInstrumentPage());
-        this.menuChangeSoundbank.addActionListener(e -> this.changeSoundbankPage());
+        // this.menuChangeSoundbank.addActionListener(e -> this.changeSoundbankPage());
 
         this.menuInstrument.add(this.menuChangeInstr);
-        this.menuInstrument.add(this.menuChangeSoundbank);
+        // this.menuInstrument.add(this.menuChangeSoundbank);
 
         this.menu.add(this.menuFile);
         this.menu.add(this.menuInstrument);
@@ -74,7 +75,7 @@ public class PianoApplicationView extends JFrame implements MouseListener {
         this.setJMenuBar(this.menu);
 
         // TODO: Streamline fix for black keys being re-layered everytime a white key
-        // updates
+        // updates in the controller using updateViewToMatchModel?
 
         int keyboardWidth = 1500;
         int numWhiteKeys = 7;
