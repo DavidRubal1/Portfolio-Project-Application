@@ -7,6 +7,8 @@ import javax.sound.midi.MidiChannel;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Patch;
 
+import components.piano.Piano;
+
 public class PianoApplicationController {
     private PianoApplicationModel model;
     private PianoApplicationView view;
@@ -86,6 +88,16 @@ public class PianoApplicationController {
         if (this.model.getSynth().getChannels()[this.MIDI_CHANNEL] != null) {
             this.model.getSynth().getChannels()[this.MIDI_CHANNEL].noteOff(keyID + this.MIDI_OFFSET_FROM_0);
         }
+    }
+
+    public String getCurrentNoteString() {
+        StringBuilder keys = new StringBuilder();
+
+        for (Piano.Key k : this.model.getKeyboard().activeKeys()) {
+            String s = k.toString();
+            keys.append(s.substring(s.indexOf(',') + 1, s.length() - 1));
+        }
+        return keys.toString();
     }
 
 }

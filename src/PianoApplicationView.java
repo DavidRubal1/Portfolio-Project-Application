@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -10,12 +11,14 @@ import java.awt.event.MouseListener;
 
 import javax.sound.midi.Instrument;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -38,6 +41,7 @@ public class PianoApplicationView extends JFrame implements MouseListener {
     JMenuBar menu;
     JMenu menuFile, menuInstrument, menuHelp;
     JMenuItem menuFileSave, menuFileLoad, menuFileExit, menuChangeInstr, menuChangeSoundbank;
+    JLabel currentNote;
 
     PianoApplicationView() {
         super("PianoApp");
@@ -46,7 +50,7 @@ public class PianoApplicationView extends JFrame implements MouseListener {
 
         this.menuFile = new JMenu("File");
         this.menuInstrument = new JMenu("Instrument");
-        this.menuHelp = new JMenu("Help");
+        // this.menuHelp = new JMenu("Help");
 
         // this.menuFileSave = new JMenuItem("Save");
         this.menuFileLoad = new JMenuItem("Load Soundbank");
@@ -70,7 +74,7 @@ public class PianoApplicationView extends JFrame implements MouseListener {
 
         this.menu.add(this.menuFile);
         this.menu.add(this.menuInstrument);
-        this.menu.add(this.menuHelp);
+        // this.menu.add(this.menuHelp);
 
         this.setJMenuBar(this.menu);
 
@@ -134,7 +138,11 @@ public class PianoApplicationView extends JFrame implements MouseListener {
 
         this.add(this.keyLayers);
 
-        this.setLayout(new FlowLayout());
+        this.currentNote = new JLabel("Current Note Pitch: ");
+        this.currentNote.setFont(new Font(Font.DIALOG, Font.PLAIN, 20));
+        this.add(this.currentNote);
+
+        this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
         this.pack();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
@@ -211,6 +219,7 @@ public class PianoApplicationView extends JFrame implements MouseListener {
         if (e.getButton() == MouseEvent.BUTTON1) {
             this.activeKey = (JComponent) (e.getSource());
             this.controller.processKeyPress((int) this.activeKey.getClientProperty("ID"));
+            this.currentNote.setText("Current Note Pitch: " + this.controller.getCurrentNoteString() + "Hz");
 
             this.activeKey.setBackground(Color.gray);
 
@@ -232,6 +241,7 @@ public class PianoApplicationView extends JFrame implements MouseListener {
             } else {
                 this.activeKey.setBackground(Color.white);
             }
+            this.currentNote.setText("Current Note Pitch: " + this.controller.getCurrentNoteString() + "Hz");
 
             this.keyLayers.setLayer(this.blackKeys, JLayeredPane.DRAG_LAYER);
             this.leftClickDown = false;
@@ -245,7 +255,7 @@ public class PianoApplicationView extends JFrame implements MouseListener {
         if (this.leftClickDown) {
             this.activeKey = (JComponent) (e.getSource());
             this.controller.processKeyPress((int) this.activeKey.getClientProperty("ID"));
-
+            this.currentNote.setText("Current Note Pitch: " + this.controller.getCurrentNoteString() + "Hz");
             this.activeKey.setBackground(Color.gray);
             this.keyLayers.setLayer(this.blackKeys, JLayeredPane.DRAG_LAYER);
         }
@@ -255,6 +265,7 @@ public class PianoApplicationView extends JFrame implements MouseListener {
     public void mouseExited(MouseEvent e) {
         JComponent key = (JComponent) (e.getSource());
         this.controller.processKeyRelease((int) key.getClientProperty("ID"));
+        this.currentNote.setText("Current Note Pitch: " + this.controller.getCurrentNoteString() + "Hz");
 
         if (key.getClientProperty("TYPE").equals("BLACK")) {
             key.setBackground(Color.black);
